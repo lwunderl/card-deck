@@ -27,6 +27,7 @@ def deal(deck, player_count):
         hand = [deck[x + player + cards_dealt] for x in range(cards_per_hand)]
         cards_dealt += cards_per_hand - 1
         hands.append({f"Player {player_number}'s Hand":hand})
+    return hands
 
 #Create bidding
 
@@ -35,8 +36,8 @@ def deal(deck, player_count):
 #Create scoring
 
 def main():
-    deal(deck, player_count)
-    print(deck)
+    hands = deal(deck, player_count)
+    print(hands[0])
 
 if __name__ == "__main__":
     main()
