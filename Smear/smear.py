@@ -37,7 +37,7 @@ def deal(deck, player_count):
         player_number = player + 1
         hand = [deck[x + player + cards_dealt] for x in range(cards_per_hand)]
         cards_dealt += cards_per_hand - 1
-        hands.append({f"Player {player_number}'s Hand":hand})
+        hands.append({f"Player {player_number} Hand":hand})
     return hands
 
 #Create bidding
@@ -57,13 +57,16 @@ def declare_trump(winning_bid):
     return winning_bid
 
 def discard(hands, winning_bid):
-    trump = winning_bid["trump_suit"]
+    discard_pile = []
     for hand in hands:
         cards = list(hand.values())[0]
         for card in cards:
-            print(card)
+            if card["card_suit"] == winning_bid["trump_suit"]:
+                print(card)
+            else:
+                discard_pile.append(card)
+        print(discard_pile)
             
-
 #Create card-play
 
 
@@ -77,7 +80,11 @@ def main():
     #Shuffle deck
     shuffle(deck)
     hands = deal(deck, player_count)
+    winning_bid = bid(player_count)
+    declare_trump(winning_bid)
+    print(winning_bid)
     print(hands[0])
+    discard(hands, winning_bid)
 
 if __name__ == "__main__":
     main()
