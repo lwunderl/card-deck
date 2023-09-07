@@ -1,30 +1,11 @@
 #import dependencies
 from random import shuffle
+from playing_cards import CardDeck
 
 #Create number of players
 def choose_number_of_players():
     player_count = int(input("How many players? "))
     return player_count
-
-#Create card deck
-def create_deck():
-    suits = ["Spades","Hearts","Diamonds","Clubs"]
-    facecards = ["Ace","King","Queen","Jack"]
-    deck = [{"card_name": f"{x} of {y}", "card_number": x, "card_suit": y, "card_value": 0} for x in range(2,11) for y in suits]
-    deck.extend([{"card_name": f"{x} of {y}", "card_number": x, "card_suit": y, "card_value": 0} for x in facecards for y in suits])
-    deck.extend([{"card_name": "Joker", "card_number": "Joker", "card_suit": "Joker", "card_value": 0}, {"card_name": "Joker", "card_number": "Joker", "card_suit": "Joker", "card_value": 0}])
-    for card in deck:
-        if card["card_number"] == 10:
-            card["card_value"] = 10
-        if card["card_number"] == "Ace":
-            card["card_value"] = 4
-        if card["card_number"] == "King":
-            card["card_value"] = 3
-        if card["card_number"] == "Queen":
-            card["card_value"] = 2
-        if card["card_number"] == "Jack":
-            card["card_value"] = 1
-    return deck
 
 #Create dealing
 def deal(deck, player_count):
@@ -76,15 +57,12 @@ def discard(hands, winning_bid):
 #Run game
 def main():
     player_count = choose_number_of_players()
-    deck = create_deck()
+    #Create card deck
+    deck = CardDeck("smear")
+    deck.build_deck()
     #Shuffle deck
-    shuffle(deck)
-    hands = deal(deck, player_count)
-    winning_bid = bid(player_count)
-    declare_trump(winning_bid)
-    print(winning_bid)
-    print(hands[0])
-    discard(hands, winning_bid)
+    shuffle(deck.cards)
+    print(deck.cards[0].name)
 
 if __name__ == "__main__":
     main()
