@@ -12,19 +12,20 @@ class PlayingCard:
 class CardDeck:
     def __init__(self, name):
         self.name = name
+        self.suits = []
         self.cards = []
 
-    #create a deck of cards
+    #create a card deck object full of playing card objects
     #game is a string
     def build_deck(self, game):
         self.game = game
 
         #smear deck
         if game == "smear":
-            suits = ["Spades","Hearts","Diamonds","Clubs"]
+            self.suits = ["Spades","Hearts","Diamonds","Clubs"]
             facecards = ["Ace","King","Queen","Jack"]
-            self.cards.extend([PlayingCard(f"{x} of {y}", x, y, 0) for x in range(2,11) for y in suits])
-            self.cards.extend([PlayingCard(f"{x} of {y}", x, y, 0) for x in facecards for y in suits])
+            self.cards.extend([PlayingCard(f"{x} of {y}", x, y, 0) for x in range(2,11) for y in self.suits])
+            self.cards.extend([PlayingCard(f"{x} of {y}", x, y, 0) for x in facecards for y in self.suits])
             self.cards.extend([PlayingCard("Joker", "Joker", "Joker", 0), PlayingCard("Joker", "Joker", "Joker", 0)])
             for card in self.cards:
                 if card.number == "10":
@@ -39,17 +40,17 @@ class CardDeck:
                     card.value = 1
         #euchre deck
         elif self.game == "euchre":
-            suits = ["Spades","Hearts","Diamonds","Clubs"]
+            self.suits = ["Spades","Hearts","Diamonds","Clubs"]
             facecards = ["Ace","King","Queen","Jack"]
-            self.cards.extend([PlayingCard(f"{x} of {y}", x, y, 0) for x in range(9,11) for y in suits])
-            self.cards.extend([PlayingCard(f"{x} of {y}", x, y, 0) for x in facecards for y in suits])
+            self.cards.extend([PlayingCard(f"{x} of {y}", x, y, 0) for x in range(9,11) for y in self.suits])
+            self.cards.extend([PlayingCard(f"{x} of {y}", x, y, 0) for x in facecards for y in self.suits])
         
         #standard deck
         elif self.game == "standard":
-            suits = ["Spades","Hearts","Diamonds","Clubs"]
+            self.suits = ["Spades","Hearts","Diamonds","Clubs"]
             facecards = ["Ace","King","Queen","Jack"]
-            self.cards.extend([PlayingCard(f"{x} of {y}", x, y, 0) for x in range(2,11) for y in suits])
-            self.cards.extend([PlayingCard(f"{x} of {y}", x, y, 0) for x in facecards for y in suits])
+            self.cards.extend([PlayingCard(f"{x} of {y}", x, y, 0) for x in range(2,11) for y in self.suits])
+            self.cards.extend([PlayingCard(f"{x} of {y}", x, y, 0) for x in facecards for y in self.suits])
     
     #create draw card method to remove playing card objects from card deck object and return drawn cards
     #n is an integer
@@ -71,6 +72,9 @@ class CardDeck:
         for _ in range(p):
             for hand in hands:
                 hand.draw_hand(n, self)
+    
+    def display_cards(self):
+        print(self.name, [self.cards[x].name for x in range(len(self.cards))])
 
 #create player hand object subclass of card deck class
 class PlayerHand(CardDeck):
@@ -84,14 +88,14 @@ class PlayerHand(CardDeck):
         draw = deck.draw_cards(n)
         self.cards.extend(draw)
 
-#create bidding mechanic class 
+#create bidding object class 
 class Bid:
     def __init__(self):
         self.highest_bid = 0
         self.trump = ""
         self.winning_bidder = ""
 
-    def bid(self, hands):
+    def make_bid(self, hands):
         for hand in hands:
             bid = int(input(f"{hand.name}'s bid? "))
             if bid > self.highest_bid:
@@ -100,36 +104,14 @@ class Bid:
 
     def declare_trump(self, suit):
         self.trump = suit
+        print(f"Trump is {suit}!")
+    
+    def display_bid(self):
+        print(f"Winning Bidder: {self.winning_bidder}, Bid: {self.highest_bid}, Trump: {self.trump}")
 
 #main script
 def main():
-    smear_deck = CardDeck("smear_deck")
-    smear_deck.build_deck("smear")
-    # print([smear_deck.cards[x].name for x in range(len(smear_deck.cards))],"\n")
-
-    discard_pile = CardDeck("discard_pile")
-    # print([discard_pile.cards[x].name for x in range(len(discard_pile.cards))],"\n")
-
-    player1_hand = PlayerHand("player_1")
-    player2_hand = PlayerHand("player_2")
-    player3_hand = PlayerHand("player_3")
-
-    all_hands = [player1_hand, player2_hand, player3_hand]
-
-    bid = Bid()
-    bid.bid(all_hands)
-    bid.declare_trump(input(f"{bid.winning_bidder}, please select a trump. "))
-    print(bid.winning_bidder, bid.trump)
-
-    # smear_deck.deal_cards(2, all_hands, 2)
-    # player_hand.draw_hand(10, smear_deck)
-    # print([player1_hand.cards[x].name for x in range(len(player1_hand.cards))],"\n")
-    # print([smear_deck.cards[x].name for x in range(len(smear_deck.cards))],"\n")
-
-    # player_hand.discard_cards([player_hand.cards[1]], discard_pile)
-    # print([player_hand.cards[x].name for x in range(len(player_hand.cards))],"\n")
-    # print([smear_deck.cards[x].name for x in range(len(smear_deck.cards))],"\n")
-    # print([discard_pile.cards[x].name for x in range(len(discard_pile.cards))],"\n")
+    ...
 
 if __name__ == "__main__":
     main()
