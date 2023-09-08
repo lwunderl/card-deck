@@ -77,7 +77,7 @@ class CardDeck:
         print(self.name, [self.cards[x].name for x in range(len(self.cards))])
 
 #create player hand object subclass of card deck class
-class PlayerHand(CardDeck):
+class Hand(CardDeck):
     def __init__(self, name):
         super().__init__(name)
         self.cards = []
@@ -88,6 +88,26 @@ class PlayerHand(CardDeck):
         draw = deck.draw_cards(n)
         self.cards.extend(draw)
 
+class Trick(CardDeck):
+    def __init__(self, name):
+        super().__init__(name)
+        self.cards = []
+        self.points = 0
+
+    def card_points():
+        ...
+    
+    def trick_points():
+        ...
+
+class Player:
+    def __init__(self, name):
+        self.name = name
+
+class Team:
+    def __init__(self, name):
+        self.name = name
+
 #create bidding object class 
 class Bid:
     def __init__(self):
@@ -97,10 +117,15 @@ class Bid:
 
     def make_bid(self, hands):
         for hand in hands:
-            bid = int(input(f"{hand.name}'s bid? "))
-            if bid > self.highest_bid:
-                self.highest_bid = bid
-                self.winning_bidder = hand.name
+            while True:
+                try:
+                    bid = int(input(f"{hand.name}'s bid? "))
+                    if bid > self.highest_bid:
+                        self.highest_bid = bid
+                        self.winning_bidder = hand.name
+                    break
+                except ValueError:
+                    print("Bid needs to be a number")
 
     def declare_trump(self, suit):
         self.trump = suit

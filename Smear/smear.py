@@ -5,16 +5,21 @@ import playing_cards as pc
 #Run game
 def main():
     #create number of players
-    player_count = int(input("How many players? "))
+    while True:
+        try:
+            player_count = int(input("How many players? "))
+            break
+        except ValueError:
+            print("Number of players must be an integer")
 
-    #create Deck
+    #create decks
     smear_deck = pc.CardDeck("smear_deck")
     smear_deck.build_deck("smear")
 
     discard_pile = pc.CardDeck("discard_pile")
 
     #create player hands
-    all_hands = [pc.PlayerHand(f"player_{x}") for x in range(1,player_count + 1)]
+    all_hands = [pc.Hand(f"player_{x}") for x in range(1,player_count + 1)]
 
     #shuffle deck
     shuffle(smear_deck.cards)
