@@ -4,46 +4,29 @@ import playing_cards as pc
 
 #Run game
 def main():
-    #create number of players
-    while True:
-        try:
-            player_count = int(input("How many players? "))
-            break
-        except ValueError:
-            print("Number of players must be an integer")
+    ...
+    #enter game
+    #Create card deck
 
-    #create decks
-    smear_deck = pc.CardDeck("smear_deck")
-    smear_deck.build_deck("smear")
+    #Create players
 
-    discard_pile = pc.CardDeck("discard_pile")
+    #Create teams
 
-    #create player hands
-    all_hands = [pc.Hand(f"player_{x}") for x in range(1,player_count + 1)]
+    #Create hands
+    #Deal hands
 
-    #shuffle deck
-    shuffle(smear_deck.cards)
+    #Make bids
 
-    #deal cards from deck to hands
-    smear_deck.deal_cards(1, all_hands, 10)
-
-    #create bid
-    bid = pc.Bid()
-    bid.make_bid(all_hands)
-    while True:
-        trump = input(f"{bid.winning_bidder}, please select a trump {smear_deck.suits}. ")
-        if trump in smear_deck.suits:
-            bid.declare_trump(trump)
-            break
-        else:
-            print("please select a trump")
-    bid.display_bid()
-
-    all_hands[0].display_cards()
+    #discard, shuffle, redraw step
                 
     #Create card-play
+    #Store tricks
 
-    #Create scoring
+    #Score tricks
+    #Tally team scores
+    #clear hands and tricks and re-deal
+
+    #log moves
 
 if __name__ == "__main__":
     main()
