@@ -13,6 +13,7 @@ class PlayingCard:
     def __str__(self):
         return f"Playing card named {self.name}"
     
+    #method to check if card is trump
     def is_trump(self, trump):
         black = ["Spades", "Clubs"]
         red = ["Hearts", "Diamonds"]
@@ -26,6 +27,30 @@ class PlayingCard:
             return True
         else:
             return False
+    
+    #method to check if card follows lead suit
+    def is_follow_suit(self, trick):
+        if len(trick.cards) == 0:
+            return True
+        elif self.suit == trick.cards[0].suit:
+            return True
+        else:
+            return False
+
+    #method to check if card is a renege of lead suit (you played non-suit when you should've played suit in hand)
+    def is_renege(self, trick, hand, trump):
+        lead_card = trick.cards[0]
+        for card in hand.cards:
+            #compare card played and hand against lead jack of left bower status
+            if len(trick.cards) > 0 and lead_card.is_trump(trump) and lead_card.id == "Jack" and self.suit != lead_card.suit and card.suit == lead_card.suit and card.suit != trump:
+                return False
+            #compare card played and hand against lead suit
+            elif len(trick.cards) > 0 and self.suit != lead_card.suit and card.suit == lead_card.suit:
+                return True
+            #compare card played and hand against when a Joker is led (which has no suit) or a Joker is in hand
+            elif len(trick.cards) > 0 and self.suit != trump and lead_card.is_trump(trump) and card.is_trump(trump):
+                return True
+        return False
 
 #create playing card deck object class
 class CardDeck:
@@ -57,7 +82,6 @@ class CardDeck:
             for card in self.cards:
                 if card.id == "10":
                     card.value = 10
-                    card.order = 10
                 elif card.id == "Jack":
                     card.value = 1
                     card.order = 13
@@ -116,7 +140,7 @@ class CardDeck:
             for hand in hands:
                 hand.draw_hand(n, self)
     
-    #display card deck information
+    #display card deck .cards information
     def display_cards(self):
         print(self.name, [self.cards[x].name for x in range(len(self.cards))])
 
@@ -134,51 +158,52 @@ class Hand(CardDeck):
 
 #create a trick object subclass of card deck class
 class Trick(CardDeck):
-    def __init__(self, name, bid):
+    def __init__(self, name):
         super().__init__(name)
         self.cards = []
-        self.trump = bid.trump
-        self.score_cards = []
-        self.game_points = 0
-        self.high = 0
-        self.low = 0
     
     def __str__(self):
-        return f"Trick Name: {self.name}, Trick Cards: {self.cards}"
+        return f"Trick Name: {self.name}, Trick Cards: {[x.name for x in self.cards]}"
 
     #search through the trick to add up the card values for the "game" score point in smear
     def game_points(self):
+        game_points = 0
         for card in self.cards:
             if card.id in ["Ace","King","Queen","Jack","10"]:
-                self.game_points += card.value
+                game_points += card.value
+        return game_points
     
     #search through the trick to find the highest trump card for the "high" score point in smear based on playing card object self.order
-    def high(self):
+    def high(self, trump):
         order = 0
         for card in self.cards:
-            if card.suit == self.trump and card.order > order:
-                self.high = card.order
+            if card.suit == trump and card.order > order:
+                order = card.order
+        return order
     
     #search through the trick to find the lowest trump card for the "low" score point in smear based on playing card object self.order
-    def low(self):
-        order = 0
+    def low(self, trump):
+        order = 20
         for card in self.cards:
-            if card.suit == self.trump and card.order < order:
-                self.low = card.order
+            if card.suit == trump and card.order < order:
+                order = card.order
+        return order
     
     #search through the trick to find the "Jack", "Jick", and "Jokers" for smear
-    def jjj(self):
+    def jjj(self, trump):
+        score_cards = 0
         for card in self.cards:
-            if card.id == "Jack" and card.is_trump(self.trump):
-                self.score_cards.append(card.name)
+            if card.id == "Jack" and card.is_trump(trump):
+                score_cards += 1
             elif card.id == "Joker":
-                self.score_cards.append(card.name)
+                score_cards += 1
+        return score_cards
 
 #create a player class object
 class Player:
-    def __init__(self, name):
+    def __init__(self, name, hand=""):
         self.name = name
-        self.hand = ""
+        self.hand = hand
         self.npc = False
     
     def __str__(self):
@@ -214,10 +239,6 @@ class Team:
     def subract_score(self, n):
         self.score -= n
 
-    def score_tricks(self):
-        for trick in self.tricks:
-            print(len(trick.score_cards), trick.game_points, trick.high, trick.low)
-
 #create bidding object class 
 class Bid:
     def __init__(self):
@@ -245,7 +266,7 @@ class Bid:
             except ValueError:
                 print("Bid needs to be an integer!")
 
-    #declare trump using deck suits
+    #declare trump using deck object suits
     def declare_trump(self, deck):
         while True:
             trump = input(f"{self.winning_bidder}, declare trump suit {deck.suits}: ")
