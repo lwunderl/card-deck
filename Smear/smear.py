@@ -10,37 +10,44 @@ def main():
     for player in range(1,number_of_players + 1):
         players.append(pc.Player(f"Player_{player}"))
     
-    team_1 = pc.Team("Team_1")
-    team_2 = pc.Team("Team_2")
+    #Create teams
+    number_of_teams = 2
+    teams = []
+    for team in range(1, number_of_teams + 1):
+        teams.append(pc.Team(f"Team_{team}"))
 
+    #add players to teams
     i = 0
     for player in players:
         if i % 2 == 0:
-            team_1.add_player(player)
+            teams[0].add_player(player)
         else:
-            team_2.add_player(player)
+            teams[1].add_player(player)
         i += 1
-
-    #Create card deck
-    deck = pc.CardDeck("Smear Deck")
-    deck.build_deck("smear")
-    
-    discard_pile = pc.CardDeck("Discard Pile")
 
     #Create hands
     hands = []
     for hand in range(1,number_of_players + 1):
         hands.append(pc.Hand(f"Hand_{hand}"))
 
-    #Deal hands
-    shuffle(deck.cards)
-    deck.deal_cards(1, hands, 10)
-
     #Players pick up hands
     i = 0
     for player in players:
         player.get_hand(hands[i])
         i += 1
+        
+#start loop for game
+        
+    #Create card deck
+    deck = pc.CardDeck("Smear Deck")
+    deck.build_deck("smear")
+    
+    #Create card deck for discard pile
+    discard_pile = pc.CardDeck("Discard Pile")
+
+    #Deal hands
+    shuffle(deck.cards)
+    deck.deal_cards(1, hands, 10)
 
     #Make bids
     bid = pc.Bid()
@@ -49,6 +56,9 @@ def main():
     
     #declare trump of the deck
     bid.declare_trump(deck)
+
+    #winning bidder gets to go first
+    players = pc.winner_leads(bid.winning_bidder, players)
     
     #discard non-trump cards
     for player in players:
@@ -63,7 +73,7 @@ def main():
     #shuffle discard pile
     shuffle(discard_pile.cards)
 
-    #draw to 7 cards in hand
+    #draw to fill 7 cards in hand
     for player in players:
         while True:
             if len(player.hand.cards) < 7 and len(deck.cards) > 0:
@@ -72,24 +82,38 @@ def main():
                 player.hand.draw_hand(1,discard_pile)  
             else:
                 break
-                
+    
     #set trick number for naming purposes
     t = 1
     #Store tricks for data collection purposes
-    tricks = []
+    game_data = []
 
     #Card-play
+    #One round for each card in hand
     for _ in range(7):
+        #Create trick
         trick = pc.Trick(f"trick_{t}")
+        #variable to store current winning card in trick
         winning_card = pc.PlayingCard("Winning_Card")
+        #variable to store current winning player for trick
         current_winner = pc.Player("Winning_Player")
+        #loop through each player to play a card object from hand and store in trick
         for player in players:
+            #variable to store names of card objects
             current_hand = [x.name for x in player.hand.cards]
+            #loop through trick and hand to make sure card selected follows criteria and to determine if card and player is new winner
             while True:
+                #visual for bid
                 print(bid)
+                #visual for trick
                 trick.display_cards()
-                card_played = input(f"{player.name}, please choose a card {current_hand} ")
+                #choose card to play by index number
+                card_played_index = int(input(f"{player.name}, please choose a card {current_hand} "))
+                #variable for card name
+                card_played = current_hand[card_played_index]
+                #bool to verify card chosen follows playing rules
                 good_card = True
+                #loop through hand to find card_played
                 for hand_card in player.hand.cards:
                     #find chosen card in hand
                     if hand_card.name == card_played:
@@ -97,12 +121,15 @@ def main():
                         if hand_card.is_follow_suit(trick) or hand_card.is_trump(bid.trump):
                             #if trump is played, check if it's the highest trump
                             if hand_card.is_trump(bid.trump):
+                                #set highest trick trump card variable to card played
                                 highest_trump = hand_card
+                                #loop through trick to check for higher trick trump card
                                 for trick_card in trick.cards:
                                     if trick_card.is_trump(bid.trump) and trick_card.order > highest_trump.order:
                                         highest_trump = trick_card
                                     elif trick_card.id == "Jack" and trick_card.suit == bid.trump and hand_card.id == "Jack":
                                         highest_trump = trick_card
+                                #award card played as the current winning player and winning card if valid
                                 if hand_card == highest_trump:
                                     winning_card = hand_card
                                     current_winner = player
@@ -130,94 +157,35 @@ def main():
                             player.hand.discard_cards([hand_card], trick)
                             good_card = True
                         break
+                    #card in hand loop does not equal chosen card
                     else:
                         good_card = False
+                #Card chosen is valid
                 if good_card == True:
                     break
         
-        #attach trick to winning team
-        if current_winner in team_1.players:
-            team_1.tricks.append(trick)
-        elif current_winner in team_2.players:
-            team_2.tricks.append(trick)
+        #check if winning player is in team and attach trick to winning player's team
+        for team in teams:
+            if current_winner in team.players:
+                team.get_trick(trick)
         
-        #log tricks for history
-        tricks.append(trick)
+        #log trick for game data
+        game_data.append(trick)
 
-        print(team_1, team_2)
         #next trick number
         t += 1
-        #winner leads next trick
-        cw_index = players.index(current_winner)
-        next_player = players[:cw_index]
-        start_player = players[cw_index:]
-        players = start_player + next_player
-
-    #Score tricks
-    team_1_high = 0
-    team_1_low = 20
-    team_1_jjj = 0
-    team_1_game = 0
-
-    team_2_high = 0
-    team_2_low = 20
-    team_2_jjj = 0
-    team_2_game = 0
-
-    for trick in team_1.tricks:
-        print(trick)
-        print("game",trick.game_points())
-        print("high",trick.high(bid.trump))
-        print("low",trick.low(bid.trump))
-        print("jjj",trick.jjj(bid.trump))
-
-        if trick.high(bid.trump) > team_1_high:
-            team_1_high = trick.high(bid.trump)
-        if trick.low(bid.trump) < team_1_low:
-            team_1_low = trick.low(bid.trump)
-        team_1_jjj += trick.jjj(bid.trump)
-        team_1_game += trick.game_points()
     
-    print(team_1)
-    
-    for trick in team_2.tricks:
-        print(trick)
-        print("game",trick.game_points())
-        print("high",trick.high(bid.trump))
-        print("low",trick.low(bid.trump))
-        print("jjj",trick.jjj(bid.trump))
+        #change players order of play to winner of last trick goes first
+        players = pc.winner_leads(current_winner, players)
 
-        if trick.high(bid.trump) > team_2_high:
-            team_2_high = trick.high(bid.trump)
-        if trick.low(bid.trump) < team_2_low:
-            team_2_low = trick.low(bid.trump)
-        team_2_jjj += trick.jjj(bid.trump)
-        team_2_game += trick.game_points()
-    
-    print(team_2)
-    
-    team_1.add_score(team_1_jjj)
-    team_2.add_score(team_2_jjj)
+    #score tricks
+    pc.score_smear(teams, bid)
 
-    if team_1_high > team_2_high:
-        team_1.add_score(1)
-    else:
-        team_2.add_score(1)
-
-    if team_1_low < team_2_low:
-        team_1.add_score(1)
-    else:
-        team_2.add_score(1)
-    
-    if team_1_game > team_2_game:
-        team_1.add_score(1)
-    else:
-        team_2.add_score(1)
-
-    print(team_1, team_2)
-
-    #Tally team scores
     #clear hands and tricks and re-deal
+    for team in teams:
+        team.clear_all_tricks()
+    
+    print(teams[0], teams[1])
 
     #log moves
 

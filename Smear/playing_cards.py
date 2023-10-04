@@ -225,7 +225,7 @@ class Team:
     
     #attach trick to team
     def get_trick(self, trick):
-        self.trick.append(trick)
+        self.tricks.append(trick)
 
     #attach player to team
     def add_player(self, player):
@@ -236,8 +236,11 @@ class Team:
         self.score += n
     
     #subtract score
-    def subract_score(self, n):
+    def subtract_score(self, n):
         self.score -= n
+    
+    def clear_all_tricks(self):
+        self.tricks = []
 
 #create bidding object class 
 class Bid:
@@ -275,6 +278,75 @@ class Bid:
                 break
             else:
                 print("Trump must be a suit in the deck!")
+
+#common card playing methods
+#method to change list order of leader based on previous trick's winner, players is a list of player objects, winner is a player object
+def winner_leads(winner, players):
+    #winner leads next trick
+    winner_index = players.index(winner)
+    next_player = players[:winner_index]
+    lead_player = players[winner_index:]
+    players = lead_player + next_player
+    return players
+
+#scoring method for smear, teams is a list of team objects, bid is bid object
+def score_smear(teams, bid):
+    bidding_team = ""
+    #determine which team won the bid
+    for team in teams:
+        if bid.winning_bidder in team.players:
+            bidding_team = team
+
+    #store team scores for hand
+    team_scores = {}
+    
+    #determine which team gets the score for high, low, game
+    high = {"team": "", "high": 0}
+    low = {"team": "", "low": 99}
+    game = {"team": "", "game": 0}
+
+    #look through the tricks for each team
+    for team in teams:
+        game_points = 0
+        jjj_points = 0
+        for trick in team.tricks:
+            #look through tricks for value cards
+            #find high trump in trick and update high score
+            if trick.high(bid.trump) > high["high"]:
+                high["high"] = trick.high(bid.trump)
+                high["team"] = team
+            #find low trump in trick and update low score
+            if trick.low(bid.trump) < low["low"]:
+                low["low"] = trick.low(bid.trump)
+                low["team"] = team
+            #add up game points in trick
+            game_points += trick.game_points()
+            #add up jjj points in trick
+            jjj_points += trick.jjj(bid.trump)
+
+        #update game score
+        if game_points > game["game"]:
+            game["game"] = game_points
+            game["team"] = team
+        
+        #assign jjj point to team score
+        team_scores[team] = jjj_points
+
+    #assign high low and game scores to team
+    for team in teams:
+        if high["team"] == team:
+            team_scores[team] += 1
+        if low["team"] == team:
+            team_scores[team] += 1
+        if game["team"] == team:
+            team_scores[team] += 1
+        #check if bidding team satisfied the bid amount and add to final score
+        if team == bidding_team and team_scores[team] >= bid.highest_bid:
+            team.add_score(team_scores[team])
+        elif team == bidding_team and team_scores[team] < bid.highest_bid:
+            team.subtract_score(bid.highest_bid)
+        else:
+            team.add_score(team_scores[team])
 
 #main script
 def main():
