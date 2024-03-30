@@ -4,11 +4,19 @@ import playing_cards as pc
 
 #Run game
 def main():
-    #Create players and teams, there are always 2 teams in smear
-    number_of_players = int(input("How many players? "))
+    #Create players and teams
     players = []
-    for player in range(1,number_of_players + 1):
-        players.append(pc.Player(f"Player_{player}"))
+    while True:
+        try:
+            number_of_players = int(input("How many players? "))
+            if number_of_players >= 3 and number_of_players <= 6:
+                for player in range(1,number_of_players + 1):
+                    players.append(pc.Player(f"Player_{player}"))
+                break
+            else:
+                print("Enter 3 to 6 players")
+        except ValueError:
+            print("Please enter a number")
     
     #Create teams
     number_of_teams = 2
@@ -35,8 +43,11 @@ def main():
     for player in players:
         player.get_hand(hands[i])
         i += 1
-        
-#start loop for game
+    
+    #Store game data for evaluation purposes
+    game_data = []
+
+    #start loop for game
         
     #Create card deck
     deck = pc.CardDeck("Smear Deck")
@@ -52,6 +63,7 @@ def main():
     #Make bids
     bid = pc.Bid()
     for player in players:
+        player.hand.display_cards()
         bid.make_bid(player)
     
     #declare trump of the deck
@@ -85,8 +97,6 @@ def main():
     
     #set trick number for naming purposes
     t = 1
-    #Store tricks for data collection purposes
-    game_data = []
 
     #Card-play
     #One round for each card in hand
@@ -168,9 +178,6 @@ def main():
         for team in teams:
             if current_winner in team.players:
                 team.get_trick(trick)
-        
-        #log trick for game data
-        game_data.append(trick)
 
         #next trick number
         t += 1
@@ -186,8 +193,9 @@ def main():
         team.clear_all_tricks()
     
     print(teams[0], teams[1])
+    print(game_data)
 
-    #log moves
+    #log game data
 
 if __name__ == "__main__":
     main()

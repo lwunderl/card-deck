@@ -267,7 +267,7 @@ class Bid:
                 else:
                     print(f"{max} is the maximum allowable bid!")
             except ValueError:
-                print("Bid needs to be an integer!")
+                print("Bid needs to be a number!")
 
     #declare trump using deck object suits
     def declare_trump(self, deck):
@@ -347,6 +347,7 @@ def score_smear(teams, bid):
             team.subtract_score(bid.highest_bid)
         else:
             team.add_score(team_scores[team])
+    return team_scores
 
 #main script
 def main():
